@@ -1,0 +1,19 @@
+@startsalt project_structure
+scale 3
+title Technical Solution - projekta struktūra
+
+{
+{T
+ + Technical Solution/
+ ++ app.py (ieejas punkts, navigācija)
+ ++ data_access.py (kešota datu ielāde)
+ ++ pipeline.py (tīrīšana, sasaiste, CSL)
+ ++ views/
+ +++ results.py (Results lapa)
+ +++ data_preparation.py (8 datu problēmas)
+ +++ transition_windows.py (logu vizualizācija)
+ ++ requirements.txt
+ ++ README.md
+}
+}
+@endsalt

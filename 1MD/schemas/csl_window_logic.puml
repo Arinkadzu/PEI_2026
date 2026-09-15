@@ -1,0 +1,80 @@
+@startuml csl_window_logic
+title CSL pārslēgšanas periodu un klientu atlases loģika
+
+skinparam activity {
+  BackgroundColor #F5F5F5
+  BorderColor #666666
+  ArrowColor #666666
+}
+skinparam partition {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+}
+skinparam note {
+  BackgroundColor #FFF8DC
+  BorderColor #B8860B
+}
+
+start
+:Katram zīmolam (A, B, C, D, E)\nsava pārslēgšanas diena (BRAND_CUTOVERS);
+
+:Aprēķina logu robežas:\nwindow_start = pārslēgšanas_diena - 12 mēneši\nwindow_end   = pārslēgšanas_diena + 12 mēneši;
+
+note right
+  Robežas pusatvērtas:
+  pārslēgšanas diena PIEDER
+  tieši "pēc" periodam.
+end note
+
+partition "Periods PIRMS\n[window_start, pārslēgšanas_diena)" #E8F1FA {
+  :Ņem datus no EED1 + LVD1 + LTD1\n(lokālā apkalpošana, katra valsts sev);
+
+  if (LVD1 rindā klients ir EED1 vai LTD1?) then (ir)
+    :Izslēgt rindu no PIRMS perioda;
+    note right #FFDDDD
+      Pārbaudīts visiem 5 zīmoliem.
+      Atrastas 9 izņēmuma rindas
+      (zīmoliem A un E) - LVD1 jau
+      piegādājis uz EED1/LTD1 pirms
+      formālā pārslēgšanas datuma.
+      Sk. "Ierobežojumi".
+    end note
+  else (nav)
+    :Paturēt rindu PIRMS logā;
+  endif
+}
+
+partition "Periods PĒC\n[pārslēgšanas_diena, window_end)" #FAE8E8 {
+  :Ņem datus TIKAI no LVD1;
+  note right
+    LVD1 klienti pēc pārslēgšanas
+    ietver arī EED1 un LTD1
+    (tās kļūst par LVD1 klientēm).
+  end note
+}
+
+:CSL_pirms = 100 x sum(delivered) / sum(ordered)\npar PIRMS logu;
+:CSL_pēc = 100 x sum(delivered) / sum(ordered)\npar PĒC logu;
+
+:Rezultāts katram zīmolam atsevišķi\n(5 rindas: A, B, C, D, E);
+
+partition "Apkopotā vērtība: Visi zīmoli kopā" #EAF7EA {
+  :Apvienot visu 5 zīmolu\n"pirms" un "pēc" rindu KOPAS\n(nevis 5 procentu vidējais);
+  :CSL_kopā = 100 x sum(delivered) / sum(ordered)\npar apvienoto kopu;
+  :Unikālo klientu skaits =\nkorekta šķērsgriezuma kopa\n(klients, kas pasūta 2+ zīmolus,\nnetiek skaitīts divreiz);
+}
+
+stop
+
+note
+  Lietotnes grafiku nosaukumi (Results lapa):
+  1 CSL katram zīmolam un visiem kopā
+  2 Mēneša CSL grafiks attiecībā pret pārslēgšanas datumu
+  3 CSL siltumkarte - zīmols x mēnesis
+  4 Nepilnīgi izpildīto pasūtījumu rindu īpatsvars (%)
+  5 Pārpiegādāto pasūtījumu rindu īpatsvars (%)
+  6 Dublēto pasūtījumu rindu īpatsvars (%)
+  7 Unikālie klienti aiz skaitļiem
+end note
+
+@enduml
